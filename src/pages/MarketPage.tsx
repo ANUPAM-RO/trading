@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { useAppDispatch, useAppSelector } from '../app/store'
 import { marketActions } from '../features/market/marketSlice'
+import TradingViewChart from '../components/TradingViewChart'
 import { formatCompact, formatCurrency } from '../lib/format'
 import {
   BarElement,
@@ -35,7 +36,8 @@ function MarketPage() {
   const { symbols, selectedSymbol, timeframe, orderBook, ticker, connectionStatus, feedSource, lastUpdated } =
     useAppSelector((state) => state.market)
   const currency = useAppSelector((state) => state.settings.currency)
-  const [chartType, setChartType] = useState<'line' | 'bar'>('line')
+  const theme = useAppSelector((state) => state.settings.theme)
+  const [chartType, setChartType] = useState<'line' | 'bar' | 'tradingview'>('tradingview')
 
   const selected = useMemo(
     () => symbols.find((item) => item.symbol === selectedSymbol) ?? symbols[0],
@@ -164,6 +166,9 @@ function MarketPage() {
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
+            <Chip active={chartType === 'tradingview'} onClick={() => setChartType('tradingview')}>
+              TradingView
+            </Chip>
             <Chip active={chartType === 'line'} onClick={() => setChartType('line')}>
               Line
             </Chip>
@@ -173,8 +178,10 @@ function MarketPage() {
           </div>
         </div>
 
-        <div className="h-[min(40vw,360px)] w-full rounded-[24px] border border-white/10 bg-slate-950/60 p-4">
-          {chartType === 'line' ? (
+        <div className="h-[min(56vw,520px)] w-full overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/60 p-4">
+          {chartType === 'tradingview' ? (
+            <TradingViewChart symbol={selected.symbol} theme={theme} />
+          ) : chartType === 'line' ? (
             <Line data={chartData} options={lineOptions} />
           ) : (
             <Bar data={chartData as unknown as ChartData<'bar'>} options={barOptions} />
