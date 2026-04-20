@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { useAppDispatch, useAppSelector } from '../app/store'
 import { marketActions } from '../features/market/marketSlice'
+import Market3DChart from '../components/Market3DChart'
 import TradingViewChart from '../components/TradingViewChart'
 import { formatCompact, formatCurrency } from '../lib/format'
 import {
@@ -37,7 +38,7 @@ function MarketPage() {
     useAppSelector((state) => state.market)
   const currency = useAppSelector((state) => state.settings.currency)
   const theme = useAppSelector((state) => state.settings.theme)
-  const [chartType, setChartType] = useState<'line' | 'bar' | 'tradingview'>('tradingview')
+  const [chartType, setChartType] = useState<'line' | 'bar' | 'tradingview' | '3d'>('3d')
 
   const selected = useMemo(
     () => symbols.find((item) => item.symbol === selectedSymbol) ?? symbols[0],
@@ -166,6 +167,9 @@ function MarketPage() {
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
+            <Chip active={chartType === '3d'} onClick={() => setChartType('3d')}>
+              Candlestick 3D
+            </Chip>
             <Chip active={chartType === 'tradingview'} onClick={() => setChartType('tradingview')}>
               TradingView
             </Chip>
@@ -178,8 +182,15 @@ function MarketPage() {
           </div>
         </div>
 
-        <div className="h-[min(56vw,520px)] w-full overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/60 p-4">
-          {chartType === 'tradingview' ? (
+        <div className="h-[min(56vw,560px)] w-full overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/60 p-4">
+          {chartType === '3d' ? (
+            <Market3DChart
+              symbol={selected.symbol}
+              history={selected.history}
+              theme={theme}
+              change={selected.change}
+            />
+          ) : chartType === 'tradingview' ? (
             <TradingViewChart symbol={selected.symbol} theme={theme} />
           ) : chartType === 'line' ? (
             <Line data={chartData} options={lineOptions} />
